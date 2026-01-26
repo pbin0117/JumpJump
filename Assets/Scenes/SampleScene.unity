@@ -9739,12 +9739,11 @@ MonoBehaviour:
   orientation: {fileID: 611697006}
   playerCam: {fileID: 940079432}
   impulseSource: {fileID: 45207379}
-  speedLines: {fileID: 0}
   shakeStrength: 0.5
   baseFOV: 80
-  maxFOV: 110
+  maxFOV: 100
   zoomSpeed: 5
-  speedForMaxEffect: 30
+  speedForMaxEffect: 20
   rotationSpeed: 7
   blastShakeDuration: 0.5
   autoCamSpeed: 5

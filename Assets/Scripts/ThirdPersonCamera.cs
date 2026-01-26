@@ -20,12 +20,11 @@ public class ThirdPersonCamera : MonoBehaviour
 
     [Header("Effects")]
     public CinemachineImpulseSource impulseSource; // Drag Player here (with Impulse Source component)
-    public ParticleSystem speedLines;              // Drag your Particle System here
     public float shakeStrength = 0.5f;
 
     [Header("Speed Feel")]
     public float baseFOV = 80f;        // Normal view
-    public float maxFOV = 110f;        // "Warp Speed" view
+    public float maxFOV = 100f;        // "Warp Speed" view
     public float zoomSpeed = 5f;       // How fast FOV changes
     public float speedForMaxEffect = 30f; // Velocity needed to reach Max FOV
     
@@ -40,6 +39,8 @@ public class ThirdPersonCamera : MonoBehaviour
     private float disableAimTimer = 0f;  // The actual timer
     private Vector3 smoothedVelocity;
 
+    private CinemachineBasicMultiChannelPerlin perlinNoise;
+
     private void Start()
     {
         // Setup Cursor
@@ -48,6 +49,8 @@ public class ThirdPersonCamera : MonoBehaviour
 
         // Ensure we start in Exploration Mode
         SetCameraMode(false);
+
+        perlinNoise = explorationCam.GetComponent<CinemachineBasicMultiChannelPerlin>();
     }
 
     // Update is called once per frame
@@ -193,13 +196,12 @@ public class ThirdPersonCamera : MonoBehaviour
     {
         float currentSpeed = playerRb.linearVelocity.magnitude;
 
-        // Dynamic FOV
+        // Calculate Intensity 
         float t = Mathf.InverseLerp(0, speedForMaxEffect, currentSpeed);
+
+        // Calculate and Apply FOV
         float targetFOV = Mathf.Lerp(baseFOV, maxFOV, t);
-
         explorationCam.Lens.FieldOfView = Mathf.Lerp(explorationCam.Lens.FieldOfView, targetFOV, Time.deltaTime * zoomSpeed);
-
-        // Speed Lines (TODO)
 
     }
 }

@@ -36,7 +36,7 @@ public class RocketLauncher : MonoBehaviour
 
             // 1. Create visual explosion (Optional)
             if (explosionEffect != null)
-                Instantiate(explosionEffect, hit.point, Quaternion.identity);
+                Instantiate(explosionEffect, hit.point, Quaternion.LookRotation(hit.normal));
 
             // 2. Find everything in range of the explosion
             Collider[] colliders = Physics.OverlapSphere(hit.point, explosionRadius);

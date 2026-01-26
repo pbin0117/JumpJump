@@ -231,7 +231,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   playerCam: {fileID: 940079431}
-  explosionEffect: {fileID: 6226980261404207179, guid: d0b586e3e9e0c704e8c45fc05cece491, type: 3}
+  explosionEffect: {fileID: 0}
   explosionForce: 0.7
   explosionRadius: 5
   upwardsModifier: 3

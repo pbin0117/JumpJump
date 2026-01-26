@@ -42,11 +42,11 @@ public class Trampoline : MonoBehaviour
             // 3. Apply the Impulse
             rb.AddForce(Vector3.up * finalForce, ForceMode.Impulse);
 
-            PlayerMovement pm = collision.gameObject.GetComponentInParent<PlayerMovement>();
-            if (pm != null)
+            RagdollController ragdollController = collision.gameObject.GetComponentInParent<RagdollController>();
+            if (ragdollController != null)
             {
                 Debug.Log("4. Disabling Player Drag via BlastMode");
-                pm.ApplyBlastForce(); // Uses the same logic as your Rocket Launcher
+                ragdollController.ApplyBlastForce(); // Uses the same logic as your Rocket Launcher
             }
 
             Debug.Log("3. BOUNCE APPLIED!");

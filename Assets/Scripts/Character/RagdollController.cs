@@ -209,8 +209,16 @@ public class RagdollController : MonoBehaviour
     {
         blastMode = true;
         yield return new WaitForSeconds(0.1f);
-        yield return new WaitUntil(() => !isGrounded);
-        yield return new WaitUntil(() => isGrounded);
+        float timeOut = 0.5f; 
+        while (isGrounded && timeOut > 0)
+        {
+            timeOut -= Time.deltaTime;
+            yield return null;
+        }
+        if (!isGrounded)
+        {
+            yield return new WaitUntil(() => isGrounded);
+        }
         blastMode = false;
     }
 

@@ -1215,6 +1215,26 @@ MonoBehaviour:
     DissipationDistance: 100
     PropagationSpeed: 343
   DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &521281397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 521281387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a0e05dcc3edf064ab0fb164bb4840cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RocketLauncher
+  playerCam: {fileID: 940079431}
+  explosionEffect: {fileID: 6226980261404207179, guid: d0b586e3e9e0c704e8c45fc05cece491, type: 3}
+  explosionForce: 0.1
+  explosionRadius: 5
+  upwardsModifier: 2
+  whatIsHittable:
+    serializedVersion: 2
+    m_Bits: 192
 --- !u!1001 &521869589
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4030,6 +4050,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: extraGravity
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
       propertyPath: jumpCooldown
       value: 0.1
       objectReference: {fileID: 0}
@@ -4138,6 +4162,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1018719265}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7559691138991523663, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 521281397}
     - targetCorrespondingSourceObject: {fileID: 7559691138991523663, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
       insertIndex: -1
       addedObject: {fileID: 521281396}

@@ -27,39 +27,32 @@ public class RocketLauncher : MonoBehaviour
     void Shoot()
     {
         RaycastHit hit;
-        Debug.DrawRay(playerCam.transform.position, playerCam.transform.forward * 100f, Color.red, 2f);
+        // Find the EXACT center of the screen (Position of Crosshair)
+        Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         
-        // Shoot a ray from the center of the camera
-        if (Physics.Raycast(playerCam.transform.position, playerCam.transform.forward, out hit, 100f, whatIsHittable))
-        {   
-            Debug.Log("Hit: " + hit.collider.name);
+        Vector3 targetPoint;
 
-            // 1. Create visual explosion (Optional)
-            if (explosionEffect != null)
-                Instantiate(explosionEffect, hit.point, Quaternion.LookRotation(hit.normal));
+        if (Physics.Raycast(ray, out hit, 100f, whatIsHittable))
+        {
+            Instantiate(explosionEffect, hit.point, Quaternion.LookRotation(hit.normal));
 
-            // 2. Find everything in range of the explosion
+            // Find everything in range of the explosion
             Collider[] colliders = Physics.OverlapSphere(hit.point, explosionRadius);
             
             foreach (Collider nearbyObject in colliders)
-    {
-            Rigidbody rb = nearbyObject.GetComponentInParent<Rigidbody>();
-            if (rb != null)
             {
-                // 1. Apply Physics Force
-                rb.AddExplosionForce(explosionForce * 10, hit.point, explosionRadius, upwardsModifier, ForceMode.Impulse);
+                Rigidbody rb = nearbyObject.GetComponentInParent<Rigidbody>();
+                if (rb != null)
+                {
+                    // 1. Apply Physics Force
+                    rb.AddExplosionForce(explosionForce * 10, hit.point, explosionRadius, upwardsModifier, ForceMode.Impulse);
 
-                // 2. NEW: Disable Speed Limits on the Player
-                PlayerMovement pm = nearbyObject.GetComponentInParent<PlayerMovement>();
-                if (pm != null)
-                    pm.ApplyBlastForce();
+                    // 2. NEW: Disable Speed Limits on the Player
+                    PlayerMovement pm = nearbyObject.GetComponentInParent<PlayerMovement>();
+                    if (pm != null)
+                        pm.ApplyBlastForce();
+                }
             }
-    }
         }
-        else
-        {
-            Debug.Log("Raycast hit NOTHING. Check your LayerMask!");
-        }
-
     }
 }

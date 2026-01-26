@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RocketLauncher : MonoBehaviour
 {
     [Header("References")]
     public Camera playerCam;
     public GameObject explosionEffect; // Drag a particle prefab here later
+    public Image cooldownImage;
 
     [Header("Settings")]
     public float explosionForce = 20f;
@@ -16,16 +18,24 @@ public class RocketLauncher : MonoBehaviour
 
     public LayerMask whatIsHittable;
 
+    [Header("Cooldown")]
+    public float cooldownTime = 1.5f; // Seconds between shots
+    private float nextFireTime = 0f;
+
     void Update()
-    {
-        if (Input.GetButtonDown("Fire1")) // Default Left Click
+    {   
+        UpdateCooldownUI();
+
+        if (Input.GetButtonDown("Fire1") && Time.time >= nextFireTime) // Default Left Click
         {
             Shoot();
         }
     }
 
     void Shoot()
-    {
+    {   
+        nextFireTime = Time.time + cooldownTime;
+
         RaycastHit hit;
         // Find the EXACT center of the screen (Position of Crosshair)
         Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
@@ -52,5 +62,32 @@ public class RocketLauncher : MonoBehaviour
                 }
             }
         }
+    }
+
+    void UpdateCooldownUI()
+    {
+        if (cooldownImage == null) return;
+
+        // 1. Calculate Fill
+        float timePassed = cooldownTime - (nextFireTime - Time.time);
+        float fillPercent = Mathf.Clamp01(timePassed / cooldownTime);
+        cooldownImage.fillAmount = fillPercent;
+
+        // 2. Handle Fading
+        Color currentColor = cooldownImage.color;
+
+        if (fillPercent >= 1f)
+        {
+            // If fully charged, fade out smoothly
+            // "Time.deltaTime * 5f" controls the fade speed (higher = faster)
+            currentColor.a = Mathf.MoveTowards(currentColor.a, 0f, Time.deltaTime * 5f);
+        }
+        else
+        {
+            // If currently reloading, snap to fully visible immediately
+            currentColor.a = 1f;
+        }
+
+        cooldownImage.color = currentColor;
     }
 }

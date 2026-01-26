@@ -13,18 +13,21 @@ public class ThirdPersonCamera : MonoBehaviour
 
     [Header("Player References")]
     public PlayerMovement playerMovement; 
+    public Rigidbody playerRb;
     public Transform playerObj;   // The visual mesh inside the player
     public Transform orientation; // The empty object that defines "Forward"
     public Transform playerCam;   // Drag your MAIN CAMERA here
     
     [Header("Settings")]
     public float rotationSpeed = 7f;
-    public float blastShakeDuration = 0.5f;
+    public float blastShakeDuration = 1f;
+    public float autoCamSpeed = 5f;
 
     // State Variables
     private bool wasAiming = false;
     private bool wasBlasted = false;     // To detect the moment we get hit
     private float disableAimTimer = 0f;  // The actual timer
+    private Vector3 smoothedVelocity;
 
     private void Start()
     {
@@ -46,7 +49,11 @@ public class ThirdPersonCamera : MonoBehaviour
             disableAimTimer = blastShakeDuration; 
 
         if (disableAimTimer > 0)
+        {
             disableAimTimer -= Time.deltaTime;
+            AlignCameraWithVelocity();
+        }
+            
 
         wasBlasted = isBlasted;
         
@@ -127,5 +134,36 @@ public class ThirdPersonCamera : MonoBehaviour
 
         // Smoothly rotate to face that point
         playerObj.forward = Vector3.Slerp(playerObj.forward, aimDir.normalized, Time.deltaTime * 20f); // Faster speed for aiming
+    }
+
+    void AlignCameraWithVelocity()
+    {
+        // 1. Get the raw velocity (Ignore Up/Down)
+        Vector3 rawFlatVel = new Vector3(playerRb.linearVelocity.x, 0, playerRb.linearVelocity.z);
+
+        // 2. Filter the noise!
+        // Instead of using raw velocity immediately, we "Lerp" the vector.
+        // This removes micro-jitters from physics collisions.
+        smoothedVelocity = Vector3.Lerp(smoothedVelocity, rawFlatVel, Time.deltaTime * 10f);
+
+        // 3. Only rotate if moving fast enough
+        if (smoothedVelocity.magnitude > 2f) 
+        {
+            // Calculate angle from the SMOOTHED velocity
+            float targetAngle = Mathf.Atan2(smoothedVelocity.x, smoothedVelocity.z) * Mathf.Rad2Deg;
+
+            var orbital = explorationCam.GetComponent<CinemachineOrbitalFollow>();
+            
+            if (orbital != null)
+            {
+                float currentAngle = orbital.HorizontalAxis.Value;
+                
+                // 4. Smoothly rotate the camera (Damping)
+                // We use a lower speed here (e.g. 5f) for the camera swing to feel heavy/cinematic
+                float newAngle = Mathf.LerpAngle(currentAngle, targetAngle, Time.deltaTime * autoCamSpeed);
+                
+                orbital.HorizontalAxis.Value = newAngle;
+            }
+        }
     }
 }

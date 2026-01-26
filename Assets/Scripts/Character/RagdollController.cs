@@ -38,6 +38,7 @@ public class RagdollController : MonoBehaviour
     // Helper components
     SyncPhysicsObject[] syncPhysicsObjects;
     Transform cameraTransform;
+    private float externalLaunchTimer = 0f;
     public bool IsAiming { get; set; }
 
     void Awake()
@@ -72,7 +73,9 @@ public class RagdollController : MonoBehaviour
     }
 
     void FixedUpdate()
-    {   
+    {      
+        if (externalLaunchTimer > 0) externalLaunchTimer -= Time.fixedDeltaTime;
+
         CheckGround();
 
         ApplyDrag();
@@ -169,7 +172,13 @@ public class RagdollController : MonoBehaviour
     }
 
     void ApplyDrag()
-    {
+    {   
+        if (externalLaunchTimer > 0)
+        {
+            rb.linearDamping = 0f;
+            return;
+        }
+
         if (isGrounded && !blastMode)
             rb.linearDamping = groundDrag;
         else
@@ -233,5 +242,22 @@ public class RagdollController : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
             transform.position = Vector3.up * 5;
         }
+    }
+
+    public void ExternalLaunch(Vector3 forceVector)
+    {
+        // 1. Reset Vertical Velocity (Clean slate)
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+        
+        // 2. Add the Force
+        rb.AddForce(forceVector, ForceMode.Impulse);
+
+        // 3. Set the "Ignore Drag" timer for 0.2 seconds
+        // This gives the physics engine enough time to lift the player 
+        // off the ground before 'ApplyDrag' kicks in again.
+        externalLaunchTimer = 0.2f; 
+        
+        // Optional: Force state to prevent other logic interfering
+        isGrounded = false; 
     }
 }

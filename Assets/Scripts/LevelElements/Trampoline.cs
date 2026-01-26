@@ -4,56 +4,41 @@ public class Trampoline : MonoBehaviour
 {
     [Header("Settings")]
     public float bounceMultiplier = 2.5f;
-    public float minJumpForce = 25f; // Increased default so you definitely see it
-    public float maxJumpForce = 60f;
+    public float minJumpForce = 25f; 
+    public float maxJumpForce = 60f; 
+    
+    // Threshold: Impacts slower than this are ignored
+    public float velocityThreshold = 1.5f; 
 
-    private void OnCollisionEnter(Collision collision)
+    [Header("Cooldown")]
+    public float bounceCooldown = 0.2f; 
+    private float lastBounceTime = -1f; 
+
+    // CHANGED: From OnCollisionEnter to OnTriggerEnter
+    // Parameter is now 'Collider', not 'Collision'
+    private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("1. Collision Detected with: " + collision.gameObject.name);
+        if (Time.time < lastBounceTime + bounceCooldown) return;
 
-        // Find the Rigidbody on the player (or parent)
-        Rigidbody rb = collision.gameObject.GetComponentInParent<Rigidbody>();
+        RagdollController ragdollController = other.GetComponentInParent<RagdollController>();
 
-        if (rb != null)
+        if (ragdollController != null)
         {
-            Debug.Log("2. RB Found. Calculating Bounce...");
+            // 1. Calculate Force (Same logic as before)
+            Rigidbody rootRb = ragdollController.GetComponent<Rigidbody>();
+            float trueFallSpeed = Mathf.Abs(rootRb.linearVelocity.y);
 
-            // Get the speed at which we hit the trampoline
-            // We use the Y component of relative velocity to only care about falling speed
-            float fallSpeed = Mathf.Abs(collision.relativeVelocity.y);
-            Debug.Log("   > Impact Fall Speed: " + fallSpeed);
+            if (trueFallSpeed < velocityThreshold) return;
 
-            // Calculate Force
-            float finalForce = fallSpeed * bounceMultiplier;
-            
-            // Clamp (Ensure it's at least the minimum, but not crazy high)
+            lastBounceTime = Time.time;
+
+            float finalForce = trueFallSpeed * bounceMultiplier;
             finalForce = Mathf.Clamp(finalForce, minJumpForce, maxJumpForce);
-            Debug.Log("   > Final Bounce Force: " + finalForce);
 
-            // FORCE APPLICATION STRATEGY
-            // 1. Kill current velocity (stop falling)
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            // 2. THE CLEAN CALL
+            ragdollController.ExternalLaunch(Vector3.up * finalForce);
 
-            // 2. Nudge Up (Crucial!)
-            // We move the player 0.2 units up so they are no longer "touching" the collider.
-            // This prevents the PlayerMovement script from applying "Ground Drag" next frame.
-            rb.position += Vector3.up * 0.2f;
-
-            // 3. Apply the Impulse
-            rb.AddForce(Vector3.up * finalForce, ForceMode.Impulse);
-
-            RagdollController ragdollController = collision.gameObject.GetComponentInParent<RagdollController>();
-            if (ragdollController != null)
-            {
-                Debug.Log("4. Disabling Player Drag via BlastMode");
-                ragdollController.ApplyBlastForce(); // Uses the same logic as your Rocket Launcher
-            }
-
-            Debug.Log("3. BOUNCE APPLIED!");
-        }
-        else
-        {
-            Debug.LogError("X. Object hit trampoline but has NO Rigidbody!");
+            Debug.Log($"Trampoline Clean Launch: {finalForce}");
         }
     }
 }

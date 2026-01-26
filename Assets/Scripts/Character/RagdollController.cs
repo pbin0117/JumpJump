@@ -28,9 +28,6 @@ public class RagdollController : MonoBehaviour
     public LayerMask whatIsGround;
     public bool isGrounded = false;
     public float characterHeight = 1f; 
-    public float maxSlopeAngle = 45f;
-
-    RaycastHit[] raycastHits = new RaycastHit[10];
 
     [Header("Blast State")]
     public bool blastMode; // The "Ragdoll" state
@@ -38,10 +35,10 @@ public class RagdollController : MonoBehaviour
     // Input
     Vector2 moveInputVector = Vector2.zero;
 
-
     // Helper components
     SyncPhysicsObject[] syncPhysicsObjects;
     Transform cameraTransform;
+    public bool IsAiming { get; set; }
 
     void Awake()
     {
@@ -121,11 +118,23 @@ public class RagdollController : MonoBehaviour
         moveDir.Normalize();
 
         // --- ROTATION ---
-        if (moveDir != Vector3.zero)
+        Quaternion desiredRotation = Quaternion.identity;
+
+        if (IsAiming)
         {
-            Quaternion desiredRotation = Quaternion.LookRotation(moveDir, Vector3.up);
-            mainJoint.targetRotation = Quaternion.Inverse(desiredRotation);
+            // AIMING MODE
+            if (camForward != Vector3.zero) 
+                desiredRotation = Quaternion.LookRotation(camForward, Vector3.up);
         }
+        else
+        {      
+            // FREE MOVE MODE
+            if (moveDir != Vector3.zero) 
+                desiredRotation = Quaternion.LookRotation(moveDir, Vector3.up);
+        }
+
+        if (desiredRotation != Quaternion.identity)
+            mainJoint.targetRotation = Quaternion.Inverse(desiredRotation);
 
         // --- FORCES ---
         if (blastMode) return; 

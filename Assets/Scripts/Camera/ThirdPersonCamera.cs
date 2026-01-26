@@ -21,6 +21,16 @@ public class ThirdPersonCamera : MonoBehaviour
     public CinemachineImpulseSource impulseSource; // Drag Player here (with Impulse Source component)
     public float shakeStrength = 0.5f;
 
+    [Header("Camera Anchor Settings")]
+    public float anchorVerticalOffset = 0.1f; 
+    public float anchorSmoothTime = 0.1f;    
+    public float anchorFallThreshold = 4f;   
+
+    // Internal "Ghost" Object
+    private Transform ghostAnchor; 
+    private float anchorCurrentY;
+    private float anchorYVelocity;
+
     [Header("Speed Feel")]
     public float baseFOV = 80f;        // Normal view
     public float maxFOV = 100f;        // "Warp Speed" view
@@ -44,7 +54,6 @@ public class ThirdPersonCamera : MonoBehaviour
     private float disableAimTimer = 0f;  // The actual timer
     private Vector3 smoothedVelocity;
 
-    private CinemachineBasicMultiChannelPerlin perlinNoise;
 
     private void Start()
     {
@@ -55,20 +64,28 @@ public class ThirdPersonCamera : MonoBehaviour
         // Ensure we start in Exploration Mode
         SetCameraMode(false);
 
-        perlinNoise = explorationCam.GetComponent<CinemachineBasicMultiChannelPerlin>();
-
         // auto-align cameras
         if (playerController != null)
         {
-            Transform target = playerController.transform;
-            
-            // Assign Exploration Cam
-            if (explorationCam.Follow == null) explorationCam.Follow = target;
-            if (explorationCam.LookAt == null) explorationCam.LookAt = target;
+            // 1. Create a hidden object in the scene
+            GameObject anchorObj = new GameObject("GhostCameraAnchor");
+            ghostAnchor = anchorObj.transform;
 
-            // Assign Focus Cam
-            if (focusCam.Follow == null) focusCam.Follow = target;
-            if (focusCam.LookAt == null) focusCam.LookAt = target;
+            // 2. Snap it to the player's initial position
+            anchorCurrentY = playerController.transform.position.y + anchorVerticalOffset;
+            ghostAnchor.position = new Vector3(playerController.transform.position.x, anchorCurrentY, playerController.transform.position.z);
+
+            // 3. Tell Cinemachine to follow THIS instead of the player
+            if (explorationCam != null) 
+            {
+                explorationCam.Follow = ghostAnchor;
+                explorationCam.LookAt = ghostAnchor;
+            }
+            if (focusCam != null) 
+            {
+                focusCam.Follow = ghostAnchor;
+                focusCam.LookAt = ghostAnchor;
+            }
         }
     }
 
@@ -107,7 +124,7 @@ public class ThirdPersonCamera : MonoBehaviour
         // --- 2. Dynamic FOV & Particles ---
         HandleSpeedEffects();
         
-        // --- 2. HANDLE CAMERA SWITCHING ---
+        // --- 3. HANDLE CAMERA SWITCHING ---
         bool holdingAimButton = Input.GetMouseButton(1);
         bool isAiming = holdingAimButton && (disableAimTimer <= 0);
 
@@ -116,6 +133,40 @@ public class ThirdPersonCamera : MonoBehaviour
             SetCameraMode(isAiming);
             wasAiming = isAiming;
         }
+
+        if (playerController != null)
+        {
+            playerController.IsAiming = isAiming;
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (playerController == null || ghostAnchor == null) return;
+
+        Vector3 playerPos = playerController.transform.position;
+        float targetY = playerPos.y + anchorVerticalOffset;
+
+        // LOGIC: Hybrid Following
+        // 1. If we are in the AIR (Jumping/Falling), snap INSTANTLY.
+        //    This ensures the camera moves with the player, preventing "panning" (tilting).
+        if (!playerController.isGrounded)
+        {
+            anchorCurrentY = targetY; 
+            anchorYVelocity = 0f; // Reset velocity so it doesn't drift when we land
+        }
+        // 2. If we are GROUNDED (Walking), use SmoothDamp.
+        //    This filters out the jittery "head bob" from the physics animations.
+        else
+        {
+            anchorCurrentY = Mathf.SmoothDamp(anchorCurrentY, targetY, ref anchorYVelocity, anchorSmoothTime);
+        }
+
+        // Apply Position: Lock X/Z to player, Hybrid Y
+        ghostAnchor.position = new Vector3(playerPos.x, anchorCurrentY, playerPos.z);
+        
+        // Match rotation (Keep this so aiming works)
+        ghostAnchor.rotation = playerController.transform.rotation;
     }
 
     void SetCameraMode(bool isAiming)

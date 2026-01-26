@@ -4458,7 +4458,7 @@ MonoBehaviour:
   TargetOffset: {x: 0.08, y: 0.14, z: 0}
   TrackerSettings:
     BindingMode: 4
-    PositionDamping: {x: 0.1, y: 1, z: 0.1}
+    PositionDamping: {x: 0.1, y: 0, z: 0.1}
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
@@ -4722,6 +4722,9 @@ MonoBehaviour:
   playerCam: {fileID: 940079432}
   impulseSource: {fileID: 521281396}
   shakeStrength: 0.5
+  anchorVerticalOffset: 0.1
+  anchorSmoothTime: 0.1
+  anchorFallThreshold: 4
   baseFOV: 80
   maxFOV: 100
   zoomSpeed: 5

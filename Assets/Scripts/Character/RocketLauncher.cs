@@ -45,10 +45,10 @@ public class RocketLauncher : MonoBehaviour
                     // 1. Apply Physics Force
                     rb.AddExplosionForce(explosionForce * 10, hit.point, explosionRadius, upwardsModifier, ForceMode.Impulse);
 
-                    // 2. NEW: Disable Speed Limits on the Player
-                    PlayerMovement pm = nearbyObject.GetComponentInParent<PlayerMovement>();
-                    if (pm != null)
-                        pm.ApplyBlastForce();
+                    // 2. apply blast force
+                    RagdollController ragdollController = nearbyObject.GetComponentInParent<RagdollController>();
+                    if (ragdollController != null)
+                        ragdollController.ApplyBlastForce();
                 }
             }
         }

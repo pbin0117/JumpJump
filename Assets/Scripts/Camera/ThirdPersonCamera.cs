@@ -12,15 +12,24 @@ public class ThirdPersonCamera : MonoBehaviour
     public Image crosshairUI;               // Drag your Crosshair Image
 
     [Header("Player References")]
-    public PlayerMovement playerMovement; 
+    public RagdollController playerController;
     public Rigidbody playerRb;
     public Transform playerObj;   // The visual mesh inside the player
-    public Transform orientation; // The empty object that defines "Forward"
     public Transform playerCam;   // Drag your MAIN CAMERA here
 
     [Header("Effects")]
     public CinemachineImpulseSource impulseSource; // Drag Player here (with Impulse Source component)
     public float shakeStrength = 0.5f;
+
+    [Header("Camera Anchor Settings")]
+    public float anchorVerticalOffset = 0.1f; 
+    public float anchorSmoothTime = 0.1f;    
+    public float anchorFallThreshold = 4f;   
+
+    // Internal "Ghost" Object
+    private Transform ghostAnchor; 
+    private float anchorCurrentY;
+    private float anchorYVelocity;
 
     [Header("Speed Feel")]
     public float baseFOV = 80f;        // Normal view
@@ -45,7 +54,6 @@ public class ThirdPersonCamera : MonoBehaviour
     private float disableAimTimer = 0f;  // The actual timer
     private Vector3 smoothedVelocity;
 
-    private CinemachineBasicMultiChannelPerlin perlinNoise;
 
     private void Start()
     {
@@ -56,14 +64,36 @@ public class ThirdPersonCamera : MonoBehaviour
         // Ensure we start in Exploration Mode
         SetCameraMode(false);
 
-        perlinNoise = explorationCam.GetComponent<CinemachineBasicMultiChannelPerlin>();
+        // auto-align cameras
+        if (playerController != null)
+        {
+            // 1. Create a hidden object in the scene
+            GameObject anchorObj = new GameObject("GhostCameraAnchor");
+            ghostAnchor = anchorObj.transform;
+
+            // 2. Snap it to the player's initial position
+            anchorCurrentY = playerController.transform.position.y + anchorVerticalOffset;
+            ghostAnchor.position = new Vector3(playerController.transform.position.x, anchorCurrentY, playerController.transform.position.z);
+
+            // 3. Tell Cinemachine to follow THIS instead of the player
+            if (explorationCam != null) 
+            {
+                explorationCam.Follow = ghostAnchor;
+                explorationCam.LookAt = ghostAnchor;
+            }
+            if (focusCam != null) 
+            {
+                focusCam.Follow = ghostAnchor;
+                focusCam.LookAt = ghostAnchor;
+            }
+        }
     }
 
     // Update is called once per frame
     private void Update()
     {      
         // --- 1. HANDLE BLAST TIMER ---
-        bool isBlasted = playerMovement.blastMode;
+        bool isBlasted = playerController.blastMode;
 
         if (isBlasted && !wasBlasted) {
             disableAimTimer = blastShakeDuration; 
@@ -94,7 +124,7 @@ public class ThirdPersonCamera : MonoBehaviour
         // --- 2. Dynamic FOV & Particles ---
         HandleSpeedEffects();
         
-        // --- 2. HANDLE CAMERA SWITCHING ---
+        // --- 3. HANDLE CAMERA SWITCHING ---
         bool holdingAimButton = Input.GetMouseButton(1);
         bool isAiming = holdingAimButton && (disableAimTimer <= 0);
 
@@ -103,29 +133,40 @@ public class ThirdPersonCamera : MonoBehaviour
             SetCameraMode(isAiming);
             wasAiming = isAiming;
         }
-        
 
-        // --- 3. HANDLE PLAYER ORIENTATION --- 
-        Vector3 viewDir = playerCam.forward;
-        viewDir.y = 0;
-        orientation.forward = viewDir.normalized;
-
-        if (isAiming)
+        if (playerController != null)
         {
-            // AIMING MODE
-            RotatePlayerToCrosshair();
+            playerController.IsAiming = isAiming;
         }
-        else if (!isBlasted)
-        {   
-            // EXPLORATION MODE
-            float horizontalInput = Input.GetAxis("Horizontal");
-            float verticalInput = Input.GetAxis("Vertical");
-            Vector3 inputDir = orientation.forward * verticalInput + orientation.right * horizontalInput;
+    }
 
-            if (inputDir != Vector3.zero) 
-                playerObj.forward = Vector3.Slerp(playerObj.forward, inputDir.normalized, Time.deltaTime * rotationSpeed);
+    private void LateUpdate()
+    {
+        if (playerController == null || ghostAnchor == null) return;
+
+        Vector3 playerPos = playerController.transform.position;
+        float targetY = playerPos.y + anchorVerticalOffset;
+
+        // LOGIC: Hybrid Following
+        // 1. If we are in the AIR (Jumping/Falling), snap INSTANTLY.
+        //    This ensures the camera moves with the player, preventing "panning" (tilting).
+        if (!playerController.isGrounded)
+        {
+            anchorCurrentY = targetY; 
+            anchorYVelocity = 0f; // Reset velocity so it doesn't drift when we land
         }
-        // else if blasted and not aiming, do nothing 
+        // 2. If we are GROUNDED (Walking), use SmoothDamp.
+        //    This filters out the jittery "head bob" from the physics animations.
+        else
+        {
+            anchorCurrentY = Mathf.SmoothDamp(anchorCurrentY, targetY, ref anchorYVelocity, anchorSmoothTime);
+        }
+
+        // Apply Position: Lock X/Z to player, Hybrid Y
+        ghostAnchor.position = new Vector3(playerPos.x, anchorCurrentY, playerPos.z);
+        
+        // Match rotation (Keep this so aiming works)
+        ghostAnchor.rotation = playerController.transform.rotation;
     }
 
     void SetCameraMode(bool isAiming)
@@ -146,33 +187,6 @@ public class ThirdPersonCamera : MonoBehaviour
 
             explorationCam.Lens.FieldOfView = baseFOV;
         }
-    }
-
-    void RotatePlayerToCrosshair()
-    {
-        // Raycast from center of screen to find what we are looking at
-        Ray ray = playerCam.GetComponent<Camera>().ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
-        
-        Vector3 targetPoint;
-
-        // Did we hit a wall/enemy?
-        if (Physics.Raycast(ray, out hit, 1000f))
-        {
-            targetPoint = hit.point;
-        }
-        else
-        {
-            // Hit nothing (Sky)? Aim at a point far in the distance
-            targetPoint = ray.GetPoint(1000f);
-        }
-
-        // Calculate direction to that point
-        Vector3 aimDir = targetPoint - playerMovement.transform.position;
-        aimDir.y = 0; // Keep the player upright (don't tilt up/down)
-
-        // Smoothly rotate to face that point
-        playerObj.forward = Vector3.Slerp(playerObj.forward, aimDir.normalized, Time.deltaTime * 20f); // Faster speed for aiming
     }
 
     void AlignCameraWithVelocity()

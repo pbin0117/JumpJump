@@ -12,10 +12,10 @@ public class VolcanoLamp : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        PlayerMovement pm = collision.gameObject.GetComponentInParent<PlayerMovement>();
+        RagdollController ragdollController = collision.gameObject.GetComponentInParent<RagdollController>();
         Rigidbody rb = collision.gameObject.GetComponentInParent<Rigidbody>();
 
-        if (pm != null && rb != null)
+        if (ragdollController != null && rb != null)
         {
             // --- VISUALS ---
             if (lavaParticles != null) lavaParticles.Play();
@@ -40,7 +40,7 @@ public class VolcanoLamp : MonoBehaviour
             rb.AddForce(finalForceDirection, ForceMode.Impulse);
 
             // --- STATE ---
-            pm.ApplyBlastForce();
+            ragdollController.ApplyBlastForce();
         }
     }
 }

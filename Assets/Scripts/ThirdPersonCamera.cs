@@ -27,6 +27,12 @@ public class ThirdPersonCamera : MonoBehaviour
     public float maxFOV = 100f;        // "Warp Speed" view
     public float zoomSpeed = 5f;       // How fast FOV changes
     public float speedForMaxEffect = 30f; // Velocity needed to reach Max FOV
+
+    [Header("Slow Motion Settings")]
+    public float minSlowMo = 0.05f;      // Tiny freeze for weak hits
+    public float maxSlowMo = 0.5f;       // Matrix-style freeze for huge hits
+    public float impactSpeedMax = 20f;   // The speed required to get the longest freeze
+    public float slowMoScale = 0.1f;     // How slow time actually gets (10%)
     
     [Header("Settings")]
     public float rotationSpeed = 7f;
@@ -66,6 +72,14 @@ public class ThirdPersonCamera : MonoBehaviour
             {
                 impulseSource.GenerateImpulse(Vector3.up * shakeStrength);
             }
+
+            float impactSpeed = playerRb.linearVelocity.magnitude;
+            float t = Mathf.InverseLerp(0, impactSpeedMax, impactSpeed);
+
+            float curvedT = t * t;
+            float dynamicDuration = Mathf.Lerp(minSlowMo, maxSlowMo, curvedT);
+
+            StartCoroutine(TriggerSlowMo(dynamicDuration));
         }
 
         if (disableAimTimer > 0)
@@ -202,6 +216,17 @@ public class ThirdPersonCamera : MonoBehaviour
         // Calculate and Apply FOV
         float targetFOV = Mathf.Lerp(baseFOV, maxFOV, t);
         explorationCam.Lens.FieldOfView = Mathf.Lerp(explorationCam.Lens.FieldOfView, targetFOV, Time.deltaTime * zoomSpeed);
+    }
 
+    IEnumerator TriggerSlowMo(float duration)
+    {
+        Time.timeScale = slowMoScale; 
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+        // Use the calculated duration here
+        yield return new WaitForSecondsRealtime(duration);
+
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
     }
 }

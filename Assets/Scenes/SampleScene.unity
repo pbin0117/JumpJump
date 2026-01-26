@@ -9744,6 +9744,10 @@ MonoBehaviour:
   maxFOV: 100
   zoomSpeed: 5
   speedForMaxEffect: 20
+  minSlowMo: 0.05
+  maxSlowMo: 0.7
+  impactSpeedMax: 15
+  slowMoScale: 0.2
   rotationSpeed: 7
   blastShakeDuration: 0.5
   autoCamSpeed: 5

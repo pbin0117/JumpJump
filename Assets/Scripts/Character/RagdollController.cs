@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using NUnit.Framework;
 
 public class RagdollController : MonoBehaviour
 {
@@ -147,30 +148,15 @@ public class RagdollController : MonoBehaviour
     }
 
     void CheckGround()
-    {
+    {   
+        isGrounded = false;
         Vector3 origin = transform.position + Vector3.up * 0.5f;
         float distance = characterHeight + 0.2f;
 
         RaycastHit hit;
         
         if (Physics.Raycast(origin, Vector3.down, out hit, distance, whatIsGround))
-        {
-            // Optional: Block jumping up steep slopes (e.g. > 45 degrees)
-            float angle = Vector3.Angle(Vector3.up, hit.normal);
-            
-            if (angle < 45f)
-            {
-                isGrounded = true;
-            }
-            else
-            {
-                isGrounded = false;
-            }
-        }
-        else
-        {
-            isGrounded = false;
-        }
+            isGrounded = true;
     }
 
     void ApplyDrag()

@@ -11,17 +11,22 @@ public class RagdollController : MonoBehaviour
     [SerializeField] Rigidbody rb;
     [SerializeField] ConfigurableJoint mainJoint;
     [SerializeField] Animator animator;
+
     [Header("Movement Stats")]
     public float moveSpeed = 4500f; // Higher values needed for Ragdolls compared to standard players
     public float currentMaxSpeed = 10f; 
     public float groundDrag = 5f;
     public float jumpForce = 20f;
+    public float jumpCooldown;
     public float airMultiplier = 0.4f;
     public float extraGravity = 20f;
 
+    bool readyToJump;
+
     [Header("Ground Check")]
     public LayerMask whatIsGround;
-    bool isGrounded = false;
+    public bool isGrounded = false;
+    public float characterHeight = 1f; 
     RaycastHit[] raycastHits = new RaycastHit[10];
 
     [Header("Blast State")]
@@ -29,7 +34,6 @@ public class RagdollController : MonoBehaviour
 
     // Input
     Vector2 moveInputVector = Vector2.zero;
-    bool isJumpButtonPressed = false;
 
 
     // Helper components
@@ -44,7 +48,9 @@ public class RagdollController : MonoBehaviour
         syncPhysicsObjects = GetComponentsInChildren<SyncPhysicsObject>();
 
         if(mainJoint != null) mainJoint.targetRotation = Quaternion.identity;
-        
+
+        readyToJump = true;
+
         if (Camera.main != null)
             cameraTransform = Camera.main.transform;
         else
@@ -59,20 +65,17 @@ public class RagdollController : MonoBehaviour
     void Update()
     {
         // 1. Collect Input directly
-        moveInputVector.x = Input.GetAxis("Horizontal");
-        moveInputVector.y = Input.GetAxis("Vertical");
-
-        if (Input.GetKeyDown(KeyCode.Space))
-            isJumpButtonPressed = true;
+        PlayerInput();
 
         // 2. Speed Control & Drag
         SpeedControl();
-        ApplyDrag();
     }
 
     void FixedUpdate()
     {   
         CheckGround();
+
+        ApplyDrag();
 
         if (!isGrounded) 
             rb.AddForce(Vector3.down * extraGravity);
@@ -82,6 +85,19 @@ public class RagdollController : MonoBehaviour
         UpdateLimbs();
         CheckRespawn();
         
+    }
+
+    void PlayerInput()
+    {
+        moveInputVector.x = Input.GetAxis("Horizontal");
+        moveInputVector.y = Input.GetAxis("Vertical");
+
+        if (Input.GetKeyDown(KeyCode.Space) && readyToJump && isGrounded)
+        {
+            readyToJump = false;
+            Jump();
+            Invoke(nameof(ResetJump), jumpCooldown);
+        }
     }
 
     void MovePlayer()
@@ -115,20 +131,29 @@ public class RagdollController : MonoBehaviour
             rb.AddForce(moveDir * moveSpeed * Time.fixedDeltaTime, ForceMode.Force);
         else
             rb.AddForce(moveDir * moveSpeed * airMultiplier * Time.fixedDeltaTime, ForceMode.Force);
+    }
 
-        // --- JUMP ---
-        if (isJumpButtonPressed)
-        {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+    void Jump()
+    {
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isJumpButtonPressed = false;
-        }
+    }
+
+    private void ResetJump()
+    {
+        readyToJump = true;
     }
 
     void CheckGround()
     {
         isGrounded = false;
-        int hits = Physics.SphereCastNonAlloc(transform.position + Vector3.up * 0.5f, 0.2f, Vector3.down, raycastHits, 0.6f, whatIsGround);
+
+        float radius = characterHeight * 0.45f;
+        float castDist = characterHeight * 0.6f;
+        Vector3 origin = transform.position + Vector3.up * (characterHeight * 0.5f);
+
+        int hits = Physics.SphereCastNonAlloc(origin, radius, Vector3.down, raycastHits, castDist, whatIsGround);
+        
         for (int i = 0; i < hits; i++)
         {
             if (raycastHits[i].transform.root != transform) 

@@ -4014,8 +4014,32 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 521281394}
     - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: jumpForce
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: moveSpeed
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: groundDrag
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
       propertyPath: orientation
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: jumpCooldown
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: characterHeight
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
+      propertyPath: currentMaxSpeed
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 678894238752977559, guid: 5eadc6e5cbf33bd4baffb09941e234ca, type: 3}
       propertyPath: whatIsGround.m_Bits

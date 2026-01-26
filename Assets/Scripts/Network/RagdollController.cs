@@ -1,50 +1,58 @@
 using UnityEngine;
-using Unity.Cinemachine;
-using System.Linq;
+using System.Collections;
 
 public class RagdollController : MonoBehaviour
 {
     // Singleton for easy access (Optional)
     public static RagdollController Local { get; private set; }
 
-    [Header("Physics")]
-    [SerializeField] Rigidbody rigidbody3D;
-    [SerializeField] ConfigurableJoint mainJoint;
+    [Header("References")]
 
-    [Header("Animation")]
+    [SerializeField] Rigidbody rb;
+    [SerializeField] ConfigurableJoint mainJoint;
     [SerializeField] Animator animator;
+    [Header("Movement Stats")]
+    public float moveSpeed = 4500f; // Higher values needed for Ragdolls compared to standard players
+    public float currentMaxSpeed = 10f; 
+    public float groundDrag = 5f;
+    public float jumpForce = 20f;
+    public float airMultiplier = 0.4f;
+    public float extraGravity = 20f;
+
+    [Header("Ground Check")]
+    public LayerMask whatIsGround;
+    bool isGrounded = false;
+    RaycastHit[] raycastHits = new RaycastHit[10];
+
+    [Header("Blast State")]
+    public bool blastMode; // The "Ragdoll" state
 
     // Input
     Vector2 moveInputVector = Vector2.zero;
     bool isJumpButtonPressed = false;
 
-    // Settings
-    float maxSpeed = 3;
-    bool isGrounded = false;
-    RaycastHit[] raycastHits = new RaycastHit[10];
 
     // Helper components
     SyncPhysicsObject[] syncPhysicsObjects;
-    CinemachineCamera cinemachineCamera;
-    CinemachineBrain cinemachineBrain;
+    Transform cameraTransform;
 
     void Awake()
     {
         Local = this;
-        syncPhysicsObjects = GetComponentsInChildren<SyncPhysicsObject>();
-        
-        // Setup Camera automatically on Start
-        cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
-        cinemachineBrain = FindFirstObjectByType<CinemachineBrain>();
+        rb = GetComponent<Rigidbody>();
 
-        if (cinemachineCamera != null)
+        syncPhysicsObjects = GetComponentsInChildren<SyncPhysicsObject>();
+
+        if(mainJoint != null) mainJoint.targetRotation = Quaternion.identity;
+        
+        if (Camera.main != null)
+            cameraTransform = Camera.main.transform;
+        else
         {
-            cinemachineCamera.Follow = transform;
-            cinemachineCamera.LookAt = transform;
-            
-            // Revert to standard Update if it was set to Manual by the old script
-            if (cinemachineBrain != null)
-                cinemachineBrain.UpdateMethod = CinemachineBrain.UpdateMethods.SmartUpdate;
+            // Fallback if Camera.main is null (e.g., missing tag)
+            Camera foundCam = FindFirstObjectByType<Camera>();
+            if (foundCam) cameraTransform = foundCam.transform;
+            else Debug.LogError("[RagdollController] No Camera found in scene!");
         }
     }
 
@@ -56,68 +64,137 @@ public class RagdollController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
             isJumpButtonPressed = true;
+
+        // 2. Speed Control & Drag
+        SpeedControl();
+        ApplyDrag();
     }
 
     void FixedUpdate()
-    {
-        // 2. Ground Check
-        isGrounded = false;
-        int numberOfHits = Physics.SphereCastNonAlloc(rigidbody3D.position, 0.1f, transform.up * -1, raycastHits, 0.5f);
+    {   
+        CheckGround();
+
+        if (!isGrounded) 
+            rb.AddForce(Vector3.down * extraGravity);
         
-        for (int i = 0; i < numberOfHits; i++)
+        MovePlayer();
+        UpdateAnimator();
+        UpdateLimbs();
+        CheckRespawn();
+        
+    }
+
+    void MovePlayer()
+    {   
+        // Orientate and Move 
+        // 1. Get Camera Vectors
+        Vector3 camForward = cameraTransform.forward;
+        Vector3 camRight = cameraTransform.right;
+
+        // 2. Flatten them (Ignore looking up/down so we don't fly into the ground)
+        camForward.y = 0;
+        camRight.y = 0;
+        camForward.Normalize();
+        camRight.Normalize();
+
+        // 3. Calculate Move Direction based on Input + Camera Angle
+        Vector3 moveDir = camForward * moveInputVector.y + camRight * moveInputVector.x;
+        moveDir.Normalize();
+
+        // --- ROTATION ---
+        if (moveDir != Vector3.zero)
         {
-            if (raycastHits[i].transform.root == transform) continue;
-            isGrounded = true;
-            break;
+            Quaternion desiredRotation = Quaternion.LookRotation(moveDir, Vector3.up);
+            mainJoint.targetRotation = Quaternion.Inverse(desiredRotation);
         }
 
-        // Apply artificial gravity if in air
-        if (!isGrounded)
-            rigidbody3D.AddForce(Vector3.down * 10);
+        // --- FORCES ---
+        if (blastMode) return; 
 
-        // Calculate local velocity for Animator
-        Vector3 localVelocifyVsForward = transform.forward * Vector3.Dot(transform.forward, rigidbody3D.linearVelocity);
-        float localForwardVelocity = localVelocifyVsForward.magnitude;
-        animator.SetFloat("movementSpeed", localForwardVelocity * 0.4f);
+        if (isGrounded)
+            rb.AddForce(moveDir * moveSpeed * Time.fixedDeltaTime, ForceMode.Force);
+        else
+            rb.AddForce(moveDir * moveSpeed * airMultiplier * Time.fixedDeltaTime, ForceMode.Force);
 
-        // 3. Movement Logic (Formerly inside GetInput check)
-        float inputMagnitude = moveInputVector.magnitude;
-
-        if (inputMagnitude != 0)
+        // --- JUMP ---
+        if (isJumpButtonPressed)
         {
-            Quaternion desiredDirection = Quaternion.LookRotation(
-                new Vector3(moveInputVector.x, 0, moveInputVector.y * -1), // * -1 might be camera dependent
-                transform.up
-            );
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isJumpButtonPressed = false;
+        }
+    }
 
-            // Rotate the configurable joint to face direction
-            mainJoint.targetRotation = Quaternion.RotateTowards(mainJoint.targetRotation, desiredDirection, Time.fixedDeltaTime * 300);
-
-            if (localForwardVelocity < maxSpeed)
+    void CheckGround()
+    {
+        isGrounded = false;
+        int hits = Physics.SphereCastNonAlloc(transform.position + Vector3.up * 0.5f, 0.2f, Vector3.down, raycastHits, 0.6f, whatIsGround);
+        for (int i = 0; i < hits; i++)
+        {
+            if (raycastHits[i].transform.root != transform) 
             {
-                rigidbody3D.AddForce(transform.forward * inputMagnitude * 30);
+                isGrounded = true;
+                break;
             }
         }
+    }
 
-        // 4. Jump Logic
-        if (isGrounded && isJumpButtonPressed)
+    void ApplyDrag()
+    {
+        if (isGrounded && !blastMode)
+            rb.linearDamping = groundDrag;
+        else
+            rb.linearDamping = 0;
+    }
+
+    void SpeedControl()
+    {
+        if (blastMode) return;
+
+        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+        
+        if (flatVel.magnitude > currentMaxSpeed)
         {
-            rigidbody3D.AddForce(Vector3.up * 20, ForceMode.Impulse);
-            isJumpButtonPressed = false; // Reset immediately after use
+            Vector3 limitedVel = flatVel.normalized * currentMaxSpeed;
+            rb.linearVelocity = new Vector3(limitedVel.x, rb.linearVelocity.y, limitedVel.z);
         }
+    }
 
-        // 5. Update Physics Limbs (Ragdoll Matching)
-        // We no longer need to sync over network, just update the joints to match animation
+    void UpdateAnimator()
+    {
+        float rawSpeed = rb.linearVelocity.magnitude; 
+        animator.SetFloat("movementSpeed", rawSpeed * 0.5f);
+    }
+
+    void UpdateLimbs()
+    {
         for (int i = 0; i < syncPhysicsObjects.Length; i++)
         {
             syncPhysicsObjects[i].UpdateJointFromAnimation();
         }
+    }
 
-        // Teleport reset (Falling off map)
-        if (transform.position.y < -10)
+    public void ApplyBlastForce()
+    {
+        StopAllCoroutines();
+        StartCoroutine(BlastRoutine());
+    }
+
+    IEnumerator BlastRoutine()
+    {
+        blastMode = true;
+        yield return new WaitForSeconds(0.1f);
+        yield return new WaitUntil(() => !isGrounded);
+        yield return new WaitUntil(() => isGrounded);
+        blastMode = false;
+    }
+
+    void CheckRespawn()
+    {
+        if (transform.position.y < -20)
         {
-            transform.position = Vector3.zero + Vector3.up * 2;
-            rigidbody3D.linearVelocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
+            transform.position = Vector3.up * 5;
         }
     }
 }

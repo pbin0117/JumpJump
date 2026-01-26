@@ -12,10 +12,9 @@ public class ThirdPersonCamera : MonoBehaviour
     public Image crosshairUI;               // Drag your Crosshair Image
 
     [Header("Player References")]
-    public PlayerMovement playerMovement; 
+    public RagdollController playerController;
     public Rigidbody playerRb;
     public Transform playerObj;   // The visual mesh inside the player
-    public Transform orientation; // The empty object that defines "Forward"
     public Transform playerCam;   // Drag your MAIN CAMERA here
 
     [Header("Effects")]
@@ -57,13 +56,27 @@ public class ThirdPersonCamera : MonoBehaviour
         SetCameraMode(false);
 
         perlinNoise = explorationCam.GetComponent<CinemachineBasicMultiChannelPerlin>();
+
+        // auto-align cameras
+        if (playerController != null)
+        {
+            Transform target = playerController.transform;
+            
+            // Assign Exploration Cam
+            if (explorationCam.Follow == null) explorationCam.Follow = target;
+            if (explorationCam.LookAt == null) explorationCam.LookAt = target;
+
+            // Assign Focus Cam
+            if (focusCam.Follow == null) focusCam.Follow = target;
+            if (focusCam.LookAt == null) focusCam.LookAt = target;
+        }
     }
 
     // Update is called once per frame
     private void Update()
     {      
         // --- 1. HANDLE BLAST TIMER ---
-        bool isBlasted = playerMovement.blastMode;
+        bool isBlasted = playerController.blastMode;
 
         if (isBlasted && !wasBlasted) {
             disableAimTimer = blastShakeDuration; 
@@ -103,29 +116,6 @@ public class ThirdPersonCamera : MonoBehaviour
             SetCameraMode(isAiming);
             wasAiming = isAiming;
         }
-        
-
-        // --- 3. HANDLE PLAYER ORIENTATION --- 
-        Vector3 viewDir = playerCam.forward;
-        viewDir.y = 0;
-        orientation.forward = viewDir.normalized;
-
-        if (isAiming)
-        {
-            // AIMING MODE
-            RotatePlayerToCrosshair();
-        }
-        else if (!isBlasted)
-        {   
-            // EXPLORATION MODE
-            float horizontalInput = Input.GetAxis("Horizontal");
-            float verticalInput = Input.GetAxis("Vertical");
-            Vector3 inputDir = orientation.forward * verticalInput + orientation.right * horizontalInput;
-
-            if (inputDir != Vector3.zero) 
-                playerObj.forward = Vector3.Slerp(playerObj.forward, inputDir.normalized, Time.deltaTime * rotationSpeed);
-        }
-        // else if blasted and not aiming, do nothing 
     }
 
     void SetCameraMode(bool isAiming)
@@ -146,33 +136,6 @@ public class ThirdPersonCamera : MonoBehaviour
 
             explorationCam.Lens.FieldOfView = baseFOV;
         }
-    }
-
-    void RotatePlayerToCrosshair()
-    {
-        // Raycast from center of screen to find what we are looking at
-        Ray ray = playerCam.GetComponent<Camera>().ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hit;
-        
-        Vector3 targetPoint;
-
-        // Did we hit a wall/enemy?
-        if (Physics.Raycast(ray, out hit, 1000f))
-        {
-            targetPoint = hit.point;
-        }
-        else
-        {
-            // Hit nothing (Sky)? Aim at a point far in the distance
-            targetPoint = ray.GetPoint(1000f);
-        }
-
-        // Calculate direction to that point
-        Vector3 aimDir = targetPoint - playerMovement.transform.position;
-        aimDir.y = 0; // Keep the player upright (don't tilt up/down)
-
-        // Smoothly rotate to face that point
-        playerObj.forward = Vector3.Slerp(playerObj.forward, aimDir.normalized, Time.deltaTime * 20f); // Faster speed for aiming
     }
 
     void AlignCameraWithVelocity()

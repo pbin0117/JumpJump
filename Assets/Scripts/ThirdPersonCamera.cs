@@ -72,11 +72,15 @@ public class ThirdPersonCamera : MonoBehaviour
         {
             focusCam.Priority = 20;       // Focus wins (20 > 10)
             if(crosshairUI) crosshairUI.enabled = true; // Show Crosshair
+
+            focusCam.GetComponent<CameraHandoff>().Sync();
         }
         else
         {
             focusCam.Priority = 5;        // Exploration wins (10 > 5)
             if(crosshairUI) crosshairUI.enabled = false; // Hide Crosshair
+
+            explorationCam.GetComponent<CameraHandoff>().Sync();
         }
     }
 

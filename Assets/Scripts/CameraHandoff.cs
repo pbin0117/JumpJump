@@ -11,22 +11,24 @@ public class CameraHandoff : MonoBehaviour
         orbitalFollow = GetComponent<CinemachineOrbitalFollow>();
     }
 
-    void OnEnable()
-    {
+    public void Sync()
+    {   
         // 1. Check if we have the component and a Main Camera
         if (Camera.main != null && orbitalFollow != null)
         {
             // 2. Get the current physical rotation of the Main Camera
             Vector3 currentRotation = Camera.main.transform.rotation.eulerAngles;
 
-            // 3. Force the Orbital Follow internal values to match
-            // This prevents the camera from "snapping back" to the past
-            
-            // Horizontal Axis (Y rotation / Yaw)
-            orbitalFollow.HorizontalAxis.Value = currentRotation.y;
-            
-            // Vertical Axis (X rotation / Pitch)
-            orbitalFollow.VerticalAxis.Value = NormalizeAngle(currentRotation.x);
+            // 3. Normalize BOTH angles to be between -180 and 180
+            // (This fixes the "always pointing same direction" bug if you turn past 180)
+            float safeYaw = NormalizeAngle(currentRotation.y);
+            float safePitch = NormalizeAngle(currentRotation.x);
+
+            // 3. Inject values
+            orbitalFollow.HorizontalAxis.Value = safeYaw;
+            orbitalFollow.VerticalAxis.Value = safePitch;
+
+            // Debug.Log($"[Handoff] Synced {gameObject.name} to Yaw: {safeYaw}, Pitch: {safePitch}");
         }
     }
 

@@ -27,6 +27,8 @@ public class RagdollController : MonoBehaviour
     public LayerMask whatIsGround;
     public bool isGrounded = false;
     public float characterHeight = 1f; 
+    public float maxSlopeAngle = 45f;
+
     RaycastHit[] raycastHits = new RaycastHit[10];
 
     [Header("Blast State")]
@@ -146,21 +148,28 @@ public class RagdollController : MonoBehaviour
 
     void CheckGround()
     {
-        isGrounded = false;
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        float distance = characterHeight + 0.2f;
 
-        float radius = characterHeight * 0.45f;
-        float castDist = characterHeight * 0.6f;
-        Vector3 origin = transform.position + Vector3.up * (characterHeight * 0.5f);
-
-        int hits = Physics.SphereCastNonAlloc(origin, radius, Vector3.down, raycastHits, castDist, whatIsGround);
+        RaycastHit hit;
         
-        for (int i = 0; i < hits; i++)
+        if (Physics.Raycast(origin, Vector3.down, out hit, distance, whatIsGround))
         {
-            if (raycastHits[i].transform.root != transform) 
+            // Optional: Block jumping up steep slopes (e.g. > 45 degrees)
+            float angle = Vector3.Angle(Vector3.up, hit.normal);
+            
+            if (angle < 45f)
             {
                 isGrounded = true;
-                break;
             }
+            else
+            {
+                isGrounded = false;
+            }
+        }
+        else
+        {
+            isGrounded = false;
         }
     }
 

@@ -141,6 +141,7 @@ GameObject:
   - component: {fileID: 45207375}
   - component: {fileID: 45207377}
   - component: {fileID: 45207378}
+  - component: {fileID: 45207379}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -237,6 +238,59 @@ MonoBehaviour:
   whatIsHittable:
     serializedVersion: 2
     m_Bits: 192
+--- !u!114 &45207379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 45207374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 1
+    ImpulseShape: 3
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 0
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -1, z: 0}
 --- !u!1001 &68521969
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3527,6 +3581,7 @@ GameObject:
   - component: {fileID: 1086133441}
   - component: {fileID: 1086133445}
   - component: {fileID: 1086133446}
+  - component: {fileID: 1086133447}
   m_Layer: 0
   m_Name: ExplorationView
   m_TagString: Untagged
@@ -3777,6 +3832,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b302c7cfeff8a3441a72920162802d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraHandoff
+--- !u!114 &1086133447
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1086133439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00b2d199b96b516448144ab30fb26aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseListener
+  ApplyAfter: 2
+  ChannelMask: 1
+  Gain: 1
+  Use2DDistance: 0
+  UseCameraSpace: 1
+  SignalCombinationMode: 0
+  ReactionSettings:
+    m_SecondaryNoise: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    Duration: 1
+    m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1098958028
 GameObject:
   m_ObjectHideFlags: 0
@@ -9302,6 +9381,7 @@ GameObject:
   - component: {fileID: 1356068638}
   - component: {fileID: 1356068633}
   - component: {fileID: 1356068639}
+  - component: {fileID: 1356068640}
   m_Layer: 0
   m_Name: FocusView
   m_TagString: Untagged
@@ -9552,6 +9632,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b302c7cfeff8a3441a72920162802d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraHandoff
+--- !u!114 &1356068640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1356068632}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00b2d199b96b516448144ab30fb26aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseListener
+  ApplyAfter: 2
+  ChannelMask: 1
+  Gain: 1
+  Use2DDistance: 0
+  UseCameraSpace: 1
+  SignalCombinationMode: 0
+  ReactionSettings:
+    m_SecondaryNoise: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    Duration: 1
+    m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!4 &1369306379 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e3af126ab869fe345984d139d1b9332c, type: 3}
@@ -9634,6 +9738,13 @@ MonoBehaviour:
   playerObj: {fileID: 856727366}
   orientation: {fileID: 611697006}
   playerCam: {fileID: 940079432}
+  impulseSource: {fileID: 45207379}
+  speedLines: {fileID: 0}
+  shakeStrength: 0.5
+  baseFOV: 80
+  maxFOV: 110
+  zoomSpeed: 5
+  speedForMaxEffect: 30
   rotationSpeed: 7
   blastShakeDuration: 0.5
   autoCamSpeed: 5

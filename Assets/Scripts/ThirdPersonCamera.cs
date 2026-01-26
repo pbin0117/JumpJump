@@ -17,6 +17,17 @@ public class ThirdPersonCamera : MonoBehaviour
     public Transform playerObj;   // The visual mesh inside the player
     public Transform orientation; // The empty object that defines "Forward"
     public Transform playerCam;   // Drag your MAIN CAMERA here
+
+    [Header("Effects")]
+    public CinemachineImpulseSource impulseSource; // Drag Player here (with Impulse Source component)
+    public ParticleSystem speedLines;              // Drag your Particle System here
+    public float shakeStrength = 0.5f;
+
+    [Header("Speed Feel")]
+    public float baseFOV = 80f;        // Normal view
+    public float maxFOV = 110f;        // "Warp Speed" view
+    public float zoomSpeed = 5f;       // How fast FOV changes
+    public float speedForMaxEffect = 30f; // Velocity needed to reach Max FOV
     
     [Header("Settings")]
     public float rotationSpeed = 7f;
@@ -45,8 +56,14 @@ public class ThirdPersonCamera : MonoBehaviour
         // --- 1. HANDLE BLAST TIMER ---
         bool isBlasted = playerMovement.blastMode;
 
-        if (isBlasted && !wasBlasted) 
+        if (isBlasted && !wasBlasted) {
             disableAimTimer = blastShakeDuration; 
+
+            if (impulseSource != null)
+            {
+                impulseSource.GenerateImpulse(Vector3.up * shakeStrength);
+            }
+        }
 
         if (disableAimTimer > 0)
         {
@@ -56,6 +73,9 @@ public class ThirdPersonCamera : MonoBehaviour
             
 
         wasBlasted = isBlasted;
+
+        // --- 2. Dynamic FOV & Particles ---
+        HandleSpeedEffects();
         
         // --- 2. HANDLE CAMERA SWITCHING ---
         bool holdingAimButton = Input.GetMouseButton(1);
@@ -106,6 +126,8 @@ public class ThirdPersonCamera : MonoBehaviour
             if(crosshairUI) crosshairUI.enabled = false; // Hide Crosshair
 
             explorationCam.GetComponent<CameraHandoff>().Sync();
+
+            explorationCam.Lens.FieldOfView = baseFOV;
         }
     }
 
@@ -165,5 +187,19 @@ public class ThirdPersonCamera : MonoBehaviour
                 orbital.HorizontalAxis.Value = newAngle;
             }
         }
+    }
+
+    void HandleSpeedEffects()
+    {
+        float currentSpeed = playerRb.linearVelocity.magnitude;
+
+        // Dynamic FOV
+        float t = Mathf.InverseLerp(0, speedForMaxEffect, currentSpeed);
+        float targetFOV = Mathf.Lerp(baseFOV, maxFOV, t);
+
+        explorationCam.Lens.FieldOfView = Mathf.Lerp(explorationCam.Lens.FieldOfView, targetFOV, Time.deltaTime * zoomSpeed);
+
+        // Speed Lines (TODO)
+
     }
 }

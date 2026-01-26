@@ -2898,7 +2898,7 @@ GameObject:
   - component: {fileID: 940079428}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9629,11 +9629,14 @@ MonoBehaviour:
   explorationCam: {fileID: 1086133444}
   focusCam: {fileID: 1356068636}
   crosshairUI: {fileID: 1501712975}
-  player: {fileID: 45207376}
+  playerMovement: {fileID: 45207377}
+  playerRb: {fileID: 45207375}
   playerObj: {fileID: 856727366}
   orientation: {fileID: 611697006}
   playerCam: {fileID: 940079432}
   rotationSpeed: 7
+  blastShakeDuration: 0.5
+  autoCamSpeed: 5
 --- !u!1001 &1441114368
 PrefabInstance:
   m_ObjectHideFlags: 0

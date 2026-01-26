@@ -12,15 +12,19 @@ public class ThirdPersonCamera : MonoBehaviour
     public Image crosshairUI;               // Drag your Crosshair Image
 
     [Header("Player References")]
-    public Transform player;      // The actual player Transform (Capsule)
+    public PlayerMovement playerMovement; 
     public Transform playerObj;   // The visual mesh inside the player
     public Transform orientation; // The empty object that defines "Forward"
     public Transform playerCam;   // Drag your MAIN CAMERA here
     
     [Header("Settings")]
     public float rotationSpeed = 7f;
+    public float blastShakeDuration = 0.5f;
 
+    // State Variables
     private bool wasAiming = false;
+    private bool wasBlasted = false;     // To detect the moment we get hit
+    private float disableAimTimer = 0f;  // The actual timer
 
     private void Start()
     {
@@ -34,9 +38,22 @@ public class ThirdPersonCamera : MonoBehaviour
 
     // Update is called once per frame
     private void Update()
-    {   
-        // --- 1. HANDLE CAMERA SWITCHING ---
-        bool isAiming = Input.GetMouseButton(1);
+    {      
+        // --- 1. HANDLE BLAST TIMER ---
+        bool isBlasted = playerMovement.blastMode;
+
+        if (isBlasted && !wasBlasted) 
+            disableAimTimer = blastShakeDuration; 
+
+        if (disableAimTimer > 0)
+            disableAimTimer -= Time.deltaTime;
+
+        wasBlasted = isBlasted;
+        
+        // --- 2. HANDLE CAMERA SWITCHING ---
+        bool holdingAimButton = Input.GetMouseButton(1);
+        bool isAiming = holdingAimButton && (disableAimTimer <= 0);
+
         if (isAiming != wasAiming)
         {
             SetCameraMode(isAiming);
@@ -44,7 +61,7 @@ public class ThirdPersonCamera : MonoBehaviour
         }
         
 
-        // --- 2. HANDLE PLAYER ORIENTATION --- 
+        // --- 3. HANDLE PLAYER ORIENTATION --- 
         Vector3 viewDir = playerCam.forward;
         viewDir.y = 0;
         orientation.forward = viewDir.normalized;
@@ -54,7 +71,7 @@ public class ThirdPersonCamera : MonoBehaviour
             // AIMING MODE
             RotatePlayerToCrosshair();
         }
-        else 
+        else if (!isBlasted)
         {   
             // EXPLORATION MODE
             float horizontalInput = Input.GetAxis("Horizontal");
@@ -64,6 +81,7 @@ public class ThirdPersonCamera : MonoBehaviour
             if (inputDir != Vector3.zero) 
                 playerObj.forward = Vector3.Slerp(playerObj.forward, inputDir.normalized, Time.deltaTime * rotationSpeed);
         }
+        // else if blasted and not aiming, do nothing 
     }
 
     void SetCameraMode(bool isAiming)
@@ -104,7 +122,7 @@ public class ThirdPersonCamera : MonoBehaviour
         }
 
         // Calculate direction to that point
-        Vector3 aimDir = targetPoint - player.position;
+        Vector3 aimDir = targetPoint - playerMovement.transform.position;
         aimDir.y = 0; // Keep the player upright (don't tilt up/down)
 
         // Smoothly rotate to face that point

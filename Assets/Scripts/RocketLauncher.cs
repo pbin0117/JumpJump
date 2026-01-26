@@ -29,8 +29,6 @@ public class RocketLauncher : MonoBehaviour
         RaycastHit hit;
         // Find the EXACT center of the screen (Position of Crosshair)
         Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        
-        Vector3 targetPoint;
 
         if (Physics.Raycast(ray, out hit, 100f, whatIsHittable))
         {

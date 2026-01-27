@@ -17,6 +17,7 @@ public class RagdollController : MonoBehaviour
     public float moveSpeed = 4500f; // Higher values needed for Ragdolls compared to standard players
     public float currentMaxSpeed = 10f; 
     public float groundDrag = 5f;
+    public float stoppingDrag = 20f; 
     public float jumpForce = 20f;
     public float jumpCooldown;
     public float airMultiplier = 0.4f;
@@ -142,8 +143,10 @@ public class RagdollController : MonoBehaviour
         // --- FORCES ---
         if (blastMode) return; 
 
-        if (isGrounded)
-            rb.AddForce(moveDir * moveSpeed * Time.fixedDeltaTime, ForceMode.Force);
+        if (isGrounded){
+            float startUpMultiplier = (rb.linearVelocity.magnitude < 2f) ? 2f : 1f;
+            rb.AddForce(moveDir * moveSpeed * startUpMultiplier * Time.fixedDeltaTime, ForceMode.Force);
+        }
         else
             rb.AddForce(moveDir * moveSpeed * airMultiplier * Time.fixedDeltaTime, ForceMode.Force);
     }
@@ -173,16 +176,36 @@ public class RagdollController : MonoBehaviour
 
     void ApplyDrag()
     {   
+        // 1. Trampoline / Launch Override
+        // If we were just launched by a trampoline, cut all drag so we fly up.
         if (externalLaunchTimer > 0)
         {
             rb.linearDamping = 0f;
             return;
         }
 
-        if (isGrounded && !blastMode)
-            rb.linearDamping = groundDrag;
+        // 2. Air / Ragdoll Override
+        // If we are falling or dead, we shouldn't have "ground friction".
+        if (!isGrounded || blastMode)
+        {
+            rb.linearDamping = 0f;
+            return;
+        }
+
+        // 3. Ground Movement Logic
+        // Check if we are trying to move
+        bool isInputActive = moveInputVector.magnitude > 0.1f;
+
+        if (isInputActive)
+        {
+            // We are running -> Low Drag (allows speed)
+            rb.linearDamping = groundDrag; 
+        }
         else
-            rb.linearDamping = 0;
+        {
+            // We released controls -> High Drag (brakes instantly)
+            rb.linearDamping = stoppingDrag; 
+        }
     }
 
     void SpeedControl()

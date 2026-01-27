@@ -65,7 +65,8 @@ public class RagdollController : MonoBehaviour
     }
 
     void Update()
-    {
+    {   
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
         // 1. Collect Input directly
         PlayerInput();
 

@@ -245,6 +245,8 @@ GameObject:
   - component: {fileID: 3783918747577923933}
   - component: {fileID: 8390426354477517675}
   - component: {fileID: 678894238752977559}
+  - component: {fileID: 6987901384452125491}
+  - component: {fileID: 3739128757436618804}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -262,7 +264,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.301, z: 2.9}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6512767159803239499}
@@ -292,9 +294,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!135 &283716029837795517
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -392,7 +394,7 @@ ConfigurableJoint:
   m_AngularXDrive:
     serializedVersion: 4
     positionSpring: 0
-    positionDamper: 0
+    positionDamper: 10
     maximumForce: 3.4028233e+38
     useAcceleration: 0
   m_AngularYZDrive:
@@ -446,9 +448,98 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de9acd4d95ae8d84eaaaa6b0777a7817, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkPlayer
-  rigidbody3D: {fileID: 8886468921751510076}
+  rb: {fileID: 8886468921751510076}
   mainJoint: {fileID: 3783918747577923933}
   animator: {fileID: 8417092887804092943}
+  moveSpeed: 1000
+  currentMaxSpeed: 5
+  groundDrag: 3
+  stoppingDrag: 20
+  jumpForce: 15
+  jumpCooldown: 0.1
+  airMultiplier: 0.4
+  extraGravity: 10
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 192
+  isGrounded: 0
+  characterHeight: 0.4
+  blastMode: 0
+--- !u!114 &6987901384452125491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7559691138991523663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a0e05dcc3edf064ab0fb164bb4840cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RocketLauncher
+  playerCam: {fileID: 0}
+  explosionEffect: {fileID: 6226980261404207179, guid: d0b586e3e9e0c704e8c45fc05cece491, type: 3}
+  cooldownImage: {fileID: 0}
+  explosionForce: 0.25
+  explosionRadius: 2
+  upwardsModifier: 2
+  whatIsHittable:
+    serializedVersion: 2
+    m_Bits: 192
+  cooldownTime: 0.75
+--- !u!114 &3739128757436618804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7559691138991523663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 1
+    ImpulseShape: 3
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 0
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0, y: -1, z: 0}
 --- !u!1 &8563519491229780506
 GameObject:
   m_ObjectHideFlags: 0
@@ -647,6 +738,80 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HandGrabHandler
   animator: {fileID: 8417092887804092943}
+--- !u!1001 &1200666090645387641
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7956110668811457310}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.9100001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.27
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9841033
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.056354202
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.08928058
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.14280719
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 4.9
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -11.1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -16.99
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+      propertyPath: m_Name
+      value: slingshot_teamYellow
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+--- !u!4 &1667218136354201234 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3d8db2f0b00727e4f92aa4f1d024759f, type: 3}
+  m_PrefabInstance: {fileID: 1200666090645387641}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2712592815577571230
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1400,6 +1565,9 @@ PrefabInstance:
     - {fileID: 5866666021909216657, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -6824373242536121958, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1667218136354201234}
     - targetCorrespondingSourceObject: {fileID: -4361254235543792588, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3184437049774605444}
@@ -2519,3 +2687,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SyncPhysicsObject
   animatedRigidbody3D: {fileID: 6815503805977443347}
   syncAnimation: 0
+--- !u!4 &7956110668811457310 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6824373242536121958, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
+  m_PrefabInstance: {fileID: 5702467736073403012}
+  m_PrefabAsset: {fileID: 0}

@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
     public float CurrentTimer { get; private set; }
     public float CurrentHeight { get; private set; }
     public float MaxHeightReached { get; private set; }
+    public int TotalJumps { get; private set; } 
+    public int TotalFalls { get; private set; }
 
     void Awake()
     {
@@ -35,6 +37,8 @@ public class GameManager : MonoBehaviour
         ResumeGame();
         CurrentTimer = 0f;
         MaxHeightReached = 0f;
+        TotalJumps = 0;
+        TotalFalls = 0;
     }
 
     void Update()
@@ -102,5 +106,25 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu"); 
+    }
+
+    public void AddJump()
+    {
+        TotalJumps++;
+    }
+
+    public void AddFall()
+    {
+        TotalFalls++;
+    }
+
+    public void SaveStatsForEndScreen()
+    {
+        PlayerPrefs.SetFloat("LastRunTime", CurrentTimer);
+        PlayerPrefs.SetInt("LastRunJumps", TotalJumps);
+        PlayerPrefs.SetInt("LastRunFalls", TotalFalls);
+        PlayerPrefs.Save();
+        
+        Debug.Log("Stats Saved! Time: " + CurrentTimer);
     }
 }

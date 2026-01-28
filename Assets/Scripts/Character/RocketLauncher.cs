@@ -61,6 +61,8 @@ public class RocketLauncher : MonoBehaviour
                     RagdollController ragdollController = nearbyObject.GetComponentInParent<RagdollController>();
                     if (ragdollController != null)
                         ragdollController.ApplyBlastForce();
+                    
+                    GameManager.Instance.AddJump();
                 }
             }
         }

@@ -14489,7 +14489,7 @@ GameObject:
   - component: {fileID: 976042733}
   - component: {fileID: 976042735}
   - component: {fileID: 976042734}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: FallTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}

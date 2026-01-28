@@ -22,6 +22,16 @@ public class RocketLauncher : MonoBehaviour
     public float cooldownTime = 1.5f; // Seconds between shots
     private float nextFireTime = 0f;
 
+
+    [Header("Sound")]
+    public AudioClip explosionSound;
+    AudioSource audioSource;
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
+
     void Update()
     {   
         if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
@@ -45,6 +55,8 @@ public class RocketLauncher : MonoBehaviour
         if (Physics.Raycast(ray, out hit, 100f, whatIsHittable))
         {
             Instantiate(explosionEffect, hit.point, Quaternion.LookRotation(hit.normal));
+
+            audioSource.PlayOneShot(explosionSound);
 
             // Find everything in range of the explosion
             Collider[] colliders = Physics.OverlapSphere(hit.point, explosionRadius);

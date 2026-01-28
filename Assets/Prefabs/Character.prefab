@@ -1587,6 +1587,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2870523794981691266, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7327611836792589758}
+    - targetCorrespondingSourceObject: {fileID: 2870523794981691266, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7511992669569612658}
     - targetCorrespondingSourceObject: {fileID: 4700718891997078985, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4829562423611546282}
@@ -1635,6 +1638,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -9217289772674400175, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7719308051689267645}
+    - targetCorrespondingSourceObject: {fileID: -9217289772674400175, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3495304054022392014}
     - targetCorrespondingSourceObject: {fileID: 8498165350272959449, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5722456861304270081}
@@ -1647,6 +1653,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8498165350272959449, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4846576966296626553}
+    - targetCorrespondingSourceObject: {fileID: 8498165350272959449, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5667052638043301664}
   m_SourcePrefab: {fileID: 100100000, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
 --- !u!4 &890175953986743984 stripped
 Transform:
@@ -2032,7 +2041,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4236955331752261981}
-  m_Material: {fileID: 13400000, guid: 06e94fdd9bded2348850057bd0957717, type: 2}
+  m_Material: {fileID: 13400000, guid: 00f1c4ffe647f7640a6abb388c8908f9, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2164,6 +2173,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SyncPhysicsObject
   animatedRigidbody3D: {fileID: 4353458969299789153}
   syncAnimation: 1
+--- !u!114 &5667052638043301664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4236955331752261981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10dc7f468b97c7442a073d3659fc6ca5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RollImpulseSensor
 --- !u!4 &5235862603686387055 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
@@ -2213,7 +2234,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5707934261804350165}
-  m_Material: {fileID: 13400000, guid: 06e94fdd9bded2348850057bd0957717, type: 2}
+  m_Material: {fileID: 13400000, guid: 00f1c4ffe647f7640a6abb388c8908f9, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2345,6 +2366,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SyncPhysicsObject
   animatedRigidbody3D: {fileID: 498795972923129526}
   syncAnimation: 1
+--- !u!114 &3495304054022392014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5707934261804350165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10dc7f468b97c7442a073d3659fc6ca5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RollImpulseSensor
 --- !u!1 &5758989747402783976 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 58325350010635884, guid: 79624421f01242b488474f28d5ba7c11, type: 3}
@@ -2687,6 +2720,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SyncPhysicsObject
   animatedRigidbody3D: {fileID: 6815503805977443347}
   syncAnimation: 0
+--- !u!114 &7511992669569612658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7562979872519709958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8402fde034296e24e8d8e67978af17ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RollImpulseReceiver
+  hardFallSpeed: -11
+  torqueImpulse: 4.5
+  sideImpulse: 1
+  upImpulse: 0.5
+  cooldown: 0.5
 --- !u!4 &7956110668811457310 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -6824373242536121958, guid: 79624421f01242b488474f28d5ba7c11, type: 3}

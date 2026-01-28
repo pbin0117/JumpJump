@@ -69,6 +69,14 @@ public class GameManager : MonoBehaviour
                 if (CurrentHeight > MaxHeightReached)
                 {
                     MaxHeightReached = CurrentHeight;
+
+                    float allTimeBest = PlayerPrefs.GetFloat("PersonalBestHeight", 0f);
+                    if (MaxHeightReached > allTimeBest)
+                    {
+                        PlayerPrefs.SetFloat("PersonalBestHeight", MaxHeightReached);
+                        // No need to PlayerPrefs.Save() here, it causes lag. 
+                        // Unity saves automatically on exit, or we do it at the end screen.
+                    }
                 }
             }
         }
@@ -119,7 +127,8 @@ public class GameManager : MonoBehaviour
     }
 
     public void SaveStatsForEndScreen()
-    {
+    {   
+        PlayerPrefs.SetFloat("LastRunHeight", MaxHeightReached);
         PlayerPrefs.SetFloat("LastRunTime", CurrentTimer);
         PlayerPrefs.SetInt("LastRunJumps", TotalJumps);
         PlayerPrefs.SetInt("LastRunFalls", TotalFalls);

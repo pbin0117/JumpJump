@@ -24,6 +24,8 @@ public class RocketLauncher : MonoBehaviour
 
     void Update()
     {   
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
+        
         UpdateCooldownUI();
 
         if (Input.GetButtonDown("Fire1") && Time.time >= nextFireTime) // Default Left Click
@@ -59,6 +61,8 @@ public class RocketLauncher : MonoBehaviour
                     RagdollController ragdollController = nearbyObject.GetComponentInParent<RagdollController>();
                     if (ragdollController != null)
                         ragdollController.ApplyBlastForce();
+                    
+                    GameManager.Instance.AddJump();
                 }
             }
         }

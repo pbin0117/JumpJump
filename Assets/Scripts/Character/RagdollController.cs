@@ -65,7 +65,8 @@ public class RagdollController : MonoBehaviour
     }
 
     void Update()
-    {
+    {   
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused) return;
         // 1. Collect Input directly
         PlayerInput();
 
@@ -78,6 +79,8 @@ public class RagdollController : MonoBehaviour
         if (externalLaunchTimer > 0) externalLaunchTimer -= Time.fixedDeltaTime;
 
         CheckGround();
+
+        ApplySlopeStabilization();
 
         ApplyDrag();
 
@@ -152,9 +155,11 @@ public class RagdollController : MonoBehaviour
     }
 
     void Jump()
-    {
+    {   
+        rb.useGravity = true;
+
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
 
     private void ResetJump()
@@ -205,6 +210,36 @@ public class RagdollController : MonoBehaviour
         {
             // We released controls -> High Drag (brakes instantly)
             rb.linearDamping = stoppingDrag; 
+        }
+    }
+
+    void ApplySlopeStabilization()
+    {
+        // 1. Safety: If we are ragdolling, jumping, or falling, Physics must run normally.
+        // 'externalLaunchTimer' check ensures we don't kill the trampoline launch.
+        if (blastMode || !isGrounded || externalLaunchTimer > 0) 
+        {
+            rb.useGravity = true; 
+            return;
+        }
+
+        // 2. Check if player wants to move
+        bool isInputActive = moveInputVector.magnitude > 0.1f;
+
+        if (isInputActive)
+        {
+            // Case A: Walking
+            // We need gravity to hug the slope while moving down it.
+            rb.useGravity = true;
+        }
+        else
+        {
+            // Case B: Standing Still
+            // Turn off gravity so the sphere doesn't slide down the hill.
+            rb.useGravity = false;
+            
+            // Kill any residual sliding momentum immediately
+            rb.linearVelocity = Vector3.zero; 
         }
     }
 

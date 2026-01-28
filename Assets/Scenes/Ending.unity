@@ -2731,6 +2731,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1165882028}
   m_CullTransparentMesh: 1
+--- !u!1 &1168405424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1168405426}
+  - component: {fileID: 1168405425}
+  m_Layer: 0
+  m_Name: EndBGM
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1168405425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168405424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30b4767fd7d68fb46b229c0e1a617722, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneBGM
+  bgm: {fileID: 8300000, guid: 82e3e060ffdee7a489ea91a957b70d48, type: 3}
+  volume: 0.2
+--- !u!4 &1168405426
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168405424}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -36.57805, y: 0, z: -69.84689}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1198021059
 GameObject:
   m_ObjectHideFlags: 0
@@ -3996,3 +4042,4 @@ SceneRoots:
   - {fileID: 634503772}
   - {fileID: 1087445654}
   - {fileID: 1960404576}
+  - {fileID: 1168405426}
